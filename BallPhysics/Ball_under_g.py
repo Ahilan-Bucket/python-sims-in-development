@@ -11,6 +11,10 @@ y0 = 10 # Start at height above origin
 v0 = 0 # m/s down
 radius = 0.5 #m , Radius of Ball
 a = -9.81 #m/s^2, Gravity on Earth
+r = 0.7 # coefficient of restitution, 
+# r=1: perfectly elastic → no energy loss → bounces forever.
+# r<1: inelastic → each bounce smaller.
+# r=0: perfectly inelastic → the ball sticks to the ground
 
 wall_below = 0 #m 
 
@@ -19,10 +23,15 @@ dt = 0.02 # s, Sampling time
 
 N = int(T/dt) # How many times the Function should run
 
+collision = False
 ys = []
 for _ in range(N):
     if (y0-radius) <= wall_below:
-        v0 = -v0
+        collision = True
+        v0 = -r * v0
+
+    if (collision) and (v0 == 0) :
+        break
 
 # Seems like i have to update the velocities as well because otherwise, 
 # there just seems to a constant Velocity kinda of effect from acceleration
@@ -66,7 +75,7 @@ def update(i):
     ball.center = (0,ys[i])
     return (ball,)
 
-ani = FuncAnimation(fig, update, init_func=init, frames=N, interval=1000*dt, blit=True)
+ani = FuncAnimation(fig, update, init_func=init, frames=len(ys), interval=1000*dt, blit=True)
 
 # --- Save to standalone HTML and show ---
 outfile = "ball_fall_gravity.html"

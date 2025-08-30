@@ -12,6 +12,7 @@ v0 = 5 # m/s right
 radius = 0.5 #m , Radius of Ball
 
 wall = 10 #m. 
+wall2 = -2 # m
 
 T = 60 # s, total time
 dt = 0.02 # s, Sampling time
@@ -20,8 +21,9 @@ N = int(T/dt) # How many times the Function should run
 
 xs = []
 for _ in range(N):
-    if (x0+radius) >= wall:
+    if ((x0+radius) >= wall) or ((x0-radius) <= wall2):
         v0 = -v0
+    
     x0 = x0 + v0*dt
     xs.append(x0)
 
@@ -32,7 +34,7 @@ for _ in range(N):
 
 # ---------------- Figure: draw a real ball ----------------
 fig, ax = plt.subplots(figsize=(8, 2.6))
-ax.set_xlim(-1,11)
+ax.set_xlim(-5,11)
 ax.set_ylim(0,10)
 
 ball = Circle(xy=[xs[0],radius],radius=radius)

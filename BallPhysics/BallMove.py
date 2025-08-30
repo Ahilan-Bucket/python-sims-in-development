@@ -37,6 +37,10 @@ fig, ax = plt.subplots(figsize=(8, 2.6))
 ax.set_xlim(-5,11)
 ax.set_ylim(0,10)
 
+# Draw Walls
+ax.axvline(x=wall)
+ax.axvline(x=wall2)
+
 ball = Circle(xy=[xs[0],radius],radius=radius)
 ax.add_patch(ball)
 

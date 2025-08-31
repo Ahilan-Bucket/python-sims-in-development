@@ -50,7 +50,22 @@ B_r = 0.9 # coefficient of restitution,
 # r<1: inelastic → each bounce smaller.
 # r=0: perfectly inelastic → the ball sticks to the ground
 
-collision = False
+
+def collision(x0,v0,r,radius,wall):
+    # Reverse Velcoity
+    v0 = -r * v0
+
+    # Brut Force Guilty, Correct Overshoot of position
+    overshoot =  wall - (x0-radius)
+    x0 = x0 + overshoot
+    return v0,x0
+
+def collision2(x0,v0,r,radius,wall):
+    v0 = -r * v0
+
+    overshoot = (x0 + radius) - wall
+    x0 = x0 - overshoot 
+    return v0, x0
 
 
 for i in range(N):
@@ -96,38 +111,28 @@ for i in range(N):
 
 
     if (A_y0-A_radius) <= wall_below:
-        A_vy0 = -A_r * A_vy0
-
-    """    collision = True
-        overshoot = A_radius - A_y0
-        A_y0 = A_y0 + overshoot"""
+        A_vy0,A_y0 = collision(A_y0,A_vy0,A_r,A_radius,wall=wall_below)
 
     if (B_y0-B_radius) <= wall_below:
-        collision = True
-        B_vy0 = -B_r * B_vy0
+        B_vy0,B_y0 = collision(B_y0,B_vy0,B_r,B_radius,wall=wall_below)
+
+    if (A_x0 - A_radius) <= wall_left:
+        A_vx0,A_x0 = collision(A_x0,A_vx0,A_r,A_radius,wall=wall_left)
+
+    if (B_x0 - B_radius) <= wall_left:
+        B_vx0, B_x0 = collision(B_x0,B_vx0,B_r,B_radius,wall=wall_left)
 
 
     if (A_x0 + A_radius) >= wall_right:
-        A_vx0 = -A_r * A_vx0
-
+         A_vx0, A_x0 = collision2(A_x0,A_vx0,A_r,A_radius,wall=wall_right)
+        
     if (B_x0 + B_radius) >= wall_right:
-        B_vx0 = -B_r * B_vx0
+        B_vx0, B_x0 = collision2(B_x0,B_vx0,B_r,B_radius,wall=wall_right)
 
-    if (A_x0 - A_radius) <= wall_left:
-        A_vx0 = -A_r * A_vx0
-
-        overshoot =  wall_left - (A_x0-A_radius)
-        A_x0 = A_x0 + overshoot 
-
-    if (B_x0 - B_radius) <= wall_left:
-        B_vx0 = -B_r * B_vx0
-
-    
 """
 A_xs,A_ys = drop_ball(x0=A_x0,y0=A_y0,v0=A_vy0,radius=A_radius,a=A_a,r=A_r)
 
 B_xs,B_ys = drop_ball(x0=B_x0,y0=B_y0,v0=B_vy0,radius=B_radius,a=B_a,r=B_r)
-
 """
 
 
@@ -172,7 +177,7 @@ def update(i):
 ani = FuncAnimation(fig, update, init_func=init, frames=N, interval=1000*dt, blit=True)
 
 # --- Save to standalone HTML and show ---
-outfile = "2balls_fall_gravity.html"
+outfile = "2balls_fall_gravity_collision.html"
 ani.save(outfile, writer=HTMLWriter(fps=int(round(1/dt)), embed_frames=True))
 plt.close(fig)
 print("Saved:", os.path.abspath(outfile))

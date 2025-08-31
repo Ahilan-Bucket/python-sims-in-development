@@ -53,6 +53,9 @@ for i in range(N):
     A_vf = A_v0 + A_a*dt
     A_v0 = A_vf
 
+    A_ys.append(A_y0)
+    A_xs.append(A_x0)
+
 
     B_ds = B_v0*dt + (1/2)*B_a*(dt)**2
     B_y0 = B_y0 + B_ds
@@ -60,32 +63,19 @@ for i in range(N):
     B_vf = B_v0 + B_a*dt
     B_v0 = B_vf
 
-    A_ys.append(A_y0)
     B_ys.append(B_y0)
-
-    A_xs.append(A_x0)
     B_xs.append(B_x0)
 
     # if I ask the radius positins to be eqaul, that never happenes becase in the
     # Time step, when the quantaties are a float, they will never exactly equal
     # Each other
 
-    if abs((A_ys[i]+A_radius) - (B_ys[i]+B_radius)) < 0.02 :
-        A_v0 = -A_r * A_v0
-        B_v0 = -B_r * B_v0
-    
-    if abs((A_ys[i]+A_radius) - (B_ys[i]-B_radius)) < 0.02:
-        A_v0 = -A_r * A_v0
-        B_v0 = -B_r * B_v0
+    # Lets Shorted this logic using net distance < Combined Radius
 
-    if abs((A_ys[i]-A_radius) - (B_ys[i]+B_radius)) < 0.02:
+    net_distance = abs(A_y0 - B_y0)
+    if net_distance < A_radius+B_radius:
         A_v0 = -A_r * A_v0
         B_v0 = -B_r * B_v0
-
-    if abs((A_ys[i]-A_radius) - (B_ys[i]-B_radius)) < 0.02 :
-        A_v0 = -A_r * A_v0
-        B_v0 = -B_r * B_v0
-
 
     if (A_y0-A_radius) <= wall_below:
         collision = True
@@ -95,10 +85,6 @@ for i in range(N):
         collision = True
         B_v0 = -B_r * B_v0
     
-
-
-    
-
 """
 A_xs,A_ys = drop_ball(x0=A_x0,y0=A_y0,v0=A_v0,radius=A_radius,a=A_a,r=A_r)
 

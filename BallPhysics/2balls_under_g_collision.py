@@ -7,7 +7,8 @@ import webbrowser, os
 
 wall_below = 0 #m 
 wall_right = 25 #m
-wall_left = -5
+wall_left = 0 # Making Walls below 0, makes this negative. This makes the code un-necessarliy longer
+# Defining such that the entier system is on the first quadraant has the same Math as a Larger Space
 
 T = 40 # s, total time
 dt = 0.01 # s, Sampling time
@@ -21,14 +22,14 @@ N = int(T/dt) # How many times the Function should run
 
 A_y0 = 5 # Start at height above origin
 A_ys = [A_y0]
-A_x0 = 0 # Start x at origin
+A_x0 = 5 # Start x at origin
 A_xs = [A_x0]
 A_radius = 0.5 #m , Radius of Ball
 
 
 B_y0 = 10 # Start at height above origin
 B_ys = [B_y0]
-B_x0 = 0 # Start x at origin
+B_x0 = 10 # Start x at origin
 B_xs = [B_x0]
 B_radius = 0.5 #m , Radius of Ball
 
@@ -94,14 +95,17 @@ for i in range(N):
         B_vx0 = -B_r * B_vx0
 
 
-
     if (A_y0-A_radius) <= wall_below:
-        collision = True
         A_vy0 = -A_r * A_vy0
+
+    """    collision = True
+        overshoot = A_radius - A_y0
+        A_y0 = A_y0 + overshoot"""
 
     if (B_y0-B_radius) <= wall_below:
         collision = True
         B_vy0 = -B_r * B_vy0
+
 
     if (A_x0 + A_radius) >= wall_right:
         A_vx0 = -A_r * A_vx0
@@ -111,6 +115,9 @@ for i in range(N):
 
     if (A_x0 - A_radius) <= wall_left:
         A_vx0 = -A_r * A_vx0
+
+        overshoot =  wall_left - (A_x0-A_radius)
+        A_x0 = A_x0 + overshoot 
 
     if (B_x0 - B_radius) <= wall_left:
         B_vx0 = -B_r * B_vx0
@@ -126,8 +133,8 @@ B_xs,B_ys = drop_ball(x0=B_x0,y0=B_y0,v0=B_vy0,radius=B_radius,a=B_a,r=B_r)
 
 # ---------------- Figure: draw a real ball ----------------
 fig, ax = plt.subplots(figsize=(8, 7))
-#ax.set_xlim(min(A_xs[0],B_xs[0])-5 ,max(A_xs[0],B_xs[0])+5)
-ax.set_xlim(-10 ,30)
+ax.set_xlim(wall_left-5 ,wall_right+5)
+#ax.set_xlim(-10 ,30)
 
 ax.set_ylim(0,20)
 ax.set_aspect('equal', adjustable='box') #  if not equal, the Output is sqiushed

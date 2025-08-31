@@ -9,8 +9,8 @@ wall_below = 0 #m
 wall_right = 25 #m
 wall_left = -5
 
-T = 60 # s, total time
-dt = 0.02 # s, Sampling time
+T = 40 # s, total time
+dt = 0.01 # s, Sampling time
 
 N = int(T/dt) # How many times the Function should run
 
@@ -34,7 +34,7 @@ B_radius = 0.5 #m , Radius of Ball
 
 A_vy0 = 0 # m/s down
 A_a = -9.81 #m/s^2, Gravity on Earth
-A_vx0 = 0
+A_vx0 = -2 # m/s
 
 A_r = 0.9 # coefficient of restitution, 
 # r=1: perfectly elastic → no energy loss → bounces forever.
@@ -43,7 +43,7 @@ A_r = 0.9 # coefficient of restitution,
 B_vy0 = 0 # m/s down
 B_a = -9.81 #m/s^2, Gravity on Earth
 
-B_vx0 = 0.002 #m/s right
+B_vx0 = 20 #m/s right
 B_r = 0.9 # coefficient of restitution, 
 # r=1: perfectly elastic → no energy loss → bounces forever.
 # r<1: inelastic → each bounce smaller.
@@ -56,7 +56,7 @@ for i in range(N):
     A_ds = A_vy0*dt + (1/2)*A_a*(dt)**2
     A_y0 = A_y0 + A_ds
 
-    A_x0 = A_x0 + A_vx0/dt
+    A_x0 = A_x0 + A_vx0*dt
 
 # Seems like i have to update the velocities as well because otherwise, 
 # there just seems to a constant Velocity kinda of effect from acceleration
@@ -70,7 +70,7 @@ for i in range(N):
     B_ds = B_vy0*dt + (1/2)*B_a*(dt)**2
     B_y0 = B_y0 + B_ds
 
-    B_x0 = B_x0 + B_vx0/dt
+    B_x0 = B_x0 + B_vx0*dt
 
     B_vf = B_vy0 + B_a*dt
     B_vy0 = B_vf

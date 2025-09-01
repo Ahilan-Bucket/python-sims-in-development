@@ -21,45 +21,8 @@ N = int(T/dt) # How many times the Function should run
 # Lets start with 1D Collison in y
 
 # Lets Add Horizontal Velocty and Make this Guys 2D and add walls on side
-nos = 3
-
-A_params = []
-B_params = []
-
-master_params = []
-
-
-
-
-
-A_x0 = 5 # Start x at origin
-A_y0 = 5 # Start at height above origin
-
-A_pos = [[A_x0,A_y0]]
-
-
-A_r = 0.9 # coefficient of restitution, 
-A_radius = 0.5 #m , Radius of Ball
-A_vy0 = 0 # m/s down
-g = -9.81 #m/s^2, Gravity on Earth
-A_vx0 = -2 # m/s
-
-B_x0 = 10 # Start x at origin
-B_y0 = 10
-
-B_pos = [[B_x0,B_y0]]
-B_radius = 0.5 #m , Radius of Ball
-
-# r=1: perfectly elastic → no energy loss → bounces forever.
-# r<1: inelastic → each bounce smaller.
-# r=0: perfectly inelastic → the ball sticks to the ground
-B_vy0 = 0 # m/s down
-g = -9.81 #m/s^2, Gravity on Earth
-B_vx0 = 20 #m/s right
-B_r = 0.9 # coefficient of restitution, 
-# r=1: perfectly elastic → no energy loss → bounces forever.
-# r<1: inelastic → each bounce smaller.
-# r=0: perfectly inelastic → the ball sticks to the ground
+nos = 10
+g = -9.81
 
 balls = []
 for i in range(nos):
@@ -68,8 +31,11 @@ for i in range(nos):
         'y': [random.randint(wall_below,30)],
         'vx': [random.randint(-20,20)], 
         'vy': [random.randint(-20,20)],
-        'radius': 0.5,           # radius
-        'r': 0.9,            # restitution
+        'radius': random.uniform(0.5,2),           # radius
+        'r': 0.9,            # coefficient of restitution
+        # r=1: perfectly elastic → no energy loss → bounces forever.
+        # r<1: inelastic → each bounce smaller.
+        # r=0: perfectly inelastic → the ball sticks to the ground
         'color': tuple(np.random.rand(3)),
     }
     balls.append(id)
@@ -119,21 +85,6 @@ for i in range(N):
         balls[id]['vx'].append(vx_now)
 
 
-        """        
-    
-        # Ball B
-
-        B_ds = B_vy0*dt + (1/2)*g*(dt)**2
-        B_y0 = B_y0 + B_ds
-
-
-        B_x0 = B_x0 + B_vx0*dt
-        B_vf = B_vy0 + g*dt
-        B_vy0 = B_vf
-
-        B_pos.append([B_x0,B_y0])
-        """    
-
     # if I ask the radius positins to be eqaul, that never happenes becase in the
     # Time step, when the quantaties are a float, they will never exactly equal
     # Each other
@@ -141,15 +92,6 @@ for i in range(N):
     # Lets Shorted this logic using net distance < Combined Radius
     # Then Lets Make this a 2D collision
 
-        """
-        net_distance = np.sqrt((A_y0 - B_y0)**2 + (A_x0 - B_x0)**2)
-        if net_distance < A_radius+B_radius:
-            A_vy0 = -A_r * A_vy0
-            B_vy0 = -B_r * B_vy0
-
-            A_vx0 = -A_r * A_vx0
-            B_vx0 = -B_r * B_vx0
-        """
 
         radius = balls[id]['radius']
         rcoef = balls[id]['r']
@@ -163,29 +105,15 @@ for i in range(N):
 
         You keep flipping every frame → looks stuck/jittery.
         '''
-
-        """
-        if (A_y0-A_radius) <= wall_below:
-            A_vy0,A_y0 = collision(A_y0,A_vy0,A_r,A_radius,wall=wall_below)
-        """
         # Balls Stick now for some reason
         if (y_now-radius) <= wall_below:
             vy_now,y_now = collision(y_now,vy_now,rcoef,radius,wall=wall_below)
 
         if (y_now+radius) >= wall_above:
             vy_now,y_now = collision2(y_now,vy_now,rcoef,radius,wall=wall_above)
-        '''
-        if (A_x0 - A_radius) <= wall_left:
-            A_vx0,A_x0 = collision(A_x0,A_vx0,A_r,A_radius,wall=wall_left)
-        '''
 
         if (x_now - radius) <= wall_left:
             vx_now, x_now = collision(x_now,vx_now,rcoef,radius,wall=wall_left)
-
-        '''
-        if (A_x0 + A_radius) >= wall_right:
-            A_vx0, A_x0 = collision2(A_x0,A_vx0,A_r,A_radius,wall=wall_right)
-        '''
 
         if (x_now + radius) >= wall_right:
             vx_now, x_now = collision2(x_now,vx_now,rcoef,radius,wall=wall_right)
@@ -228,12 +156,6 @@ for id in range(nos):
     ax.add_patch(ball)
     patches.append(ball)
     
-
-"""
-A_ball = Circle(xy=[A_pos[0][0],A_pos[0][1]],radius=A_radius,color="Blue")
-B_ball = Circle(xy=[B_pos[0][0],B_pos[0][1]],radius=B_radius,color="Black")
-"""
-
 
 def init():
     for id,patch in enumerate(patches):

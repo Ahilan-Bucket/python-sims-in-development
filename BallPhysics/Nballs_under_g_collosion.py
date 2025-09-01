@@ -9,6 +9,7 @@ import random
 wall_below = 0 #m 
 wall_right = 25 #m
 wall_left = 0 # Making Walls below 0, makes this negative. This makes the code un-necessarliy longer
+wall_above = 20
 # Defining such that the entier system is on the first quadraant has the same Math as a Larger Space
 
 T = 40 # s, total time
@@ -20,7 +21,7 @@ N = int(T/dt) # How many times the Function should run
 # Lets start with 1D Collison in y
 
 # Lets Add Horizontal Velocty and Make this Guys 2D and add walls on side
-nos = 2
+nos = 3
 
 A_params = []
 B_params = []
@@ -68,7 +69,8 @@ for i in range(nos):
         'vx': [random.randint(-20,20)], 
         'vy': [random.randint(-20,20)],
         'radius': 0.5,           # radius
-        'r': 0.9            # restitution
+        'r': 0.9,            # restitution
+        'color': tuple(np.random.rand(3)),
     }
     balls.append(id)
 
@@ -80,6 +82,7 @@ def collision(x0,v0,r,radius,wall):
     # Brut Force Guilty, Correct Overshoot of position
     overshoot =  wall - (x0-radius)
     x0 = x0 + overshoot
+
     return v0,x0
 
 def collision2(x0,v0,r,radius,wall):
@@ -87,6 +90,7 @@ def collision2(x0,v0,r,radius,wall):
 
     overshoot = (x0 + radius) - wall
     x0 = x0 - overshoot 
+    x0 = x0
     return v0, x0
 
 
@@ -150,31 +154,41 @@ for i in range(N):
         radius = balls[id]['radius']
         rcoef = balls[id]['r']
 
+        # Alter the Current 'now' states if there is a collision
+
+        '''
+        Right after a bounce, the old state is still exactly on the wall (e.g., floor contact point).
+
+        If you check that old state, you think “still colliding” and flip again—even though the ball is already moving away.
+
+        You keep flipping every frame → looks stuck/jittery.
+        '''
+
         """
         if (A_y0-A_radius) <= wall_below:
             A_vy0,A_y0 = collision(A_y0,A_vy0,A_r,A_radius,wall=wall_below)
         """
-        wall_above = 30
-        if (y_prev-radius) <= wall_below:
-            vy_now,y_now = collision(y_prev,vy_prev,rcoef,radius,wall=wall_below)
+        # Balls Stick now for some reason
+        if (y_now-radius) <= wall_below:
+            vy_now,y_now = collision(y_now,vy_now,rcoef,radius,wall=wall_below)
 
-        if (y_prev+radius) >= wall_above:
-            vy_now,y_now = collision2(y_prev,vy_prev,rcoef,radius,wall=wall_below)
+        if (y_now+radius) >= wall_above:
+            vy_now,y_now = collision2(y_now,vy_now,rcoef,radius,wall=wall_above)
         '''
         if (A_x0 - A_radius) <= wall_left:
             A_vx0,A_x0 = collision(A_x0,A_vx0,A_r,A_radius,wall=wall_left)
         '''
 
-        if (x_prev - radius) <= wall_left:
-            vx_now, x_now = collision(x_prev,vx_prev,rcoef,radius,wall=wall_left)
+        if (x_now - radius) <= wall_left:
+            vx_now, x_now = collision(x_now,vx_now,rcoef,radius,wall=wall_left)
 
         '''
         if (A_x0 + A_radius) >= wall_right:
             A_vx0, A_x0 = collision2(A_x0,A_vx0,A_r,A_radius,wall=wall_right)
         '''
 
-        if (x_prev + radius) >= wall_right:
-            vx_now, x_now = collision2(x_prev,vx_prev,rcoef,radius,wall=wall_right)
+        if (x_now + radius) >= wall_right:
+            vx_now, x_now = collision2(x_now,vx_now,rcoef,radius,wall=wall_right)
 
         
         balls[id]['y'][-1]  = y_now
@@ -194,12 +208,14 @@ ax.set_aspect('equal', adjustable='box') #  if not equal, the Output is sqiushed
 # ALl walls
 ax.axvline(x=wall_left,color="Black",lw=3)
 ax.axvline(x=wall_right,color="Black",lw=3)
+ax.axhline(y=wall_above,color="Black",lw=3)
+
 
 # Labels 
 ax.set_xlabel("x (m)")
 ax.set_ylabel("y (m)")
 
-ax.set_yticks([])
+#ax.set_yticks([])
 ax.set_title(f"{nos} Balls bouncing Under Gravity")
 
 
@@ -208,7 +224,7 @@ ax.set_title(f"{nos} Balls bouncing Under Gravity")
 patches = []
 for id in range(nos):
     ball = Circle(xy=[balls[id]['x'][0],balls[id]['y'][0]],
-                                  radius=balls[id]['radius'],color="Blue")
+                                  radius=balls[id]['radius'],color=balls[id]['color'])
     ax.add_patch(ball)
     patches.append(ball)
     
@@ -222,7 +238,7 @@ B_ball = Circle(xy=[B_pos[0][0],B_pos[0][1]],radius=B_radius,color="Black")
 def init():
     for id,patch in enumerate(patches):
         patch.center = (balls[id]['x'][0],balls[id]['y'][0])
-        return tuple(patches) # Must be Iterable with Artists
+    return tuple(patches) # Must be Iterable with Artists
 #Your animation callbacks must return an 
 # iterable of artists when blit=True. So not (ball,), not ball
 

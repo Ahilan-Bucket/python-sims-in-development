@@ -95,16 +95,24 @@ for i in range(N):
         # Ball A
         y_prev = balls[id]['y'][-1]
         vy_prev = balls[id]['vy'][-1]
+        
 
         ds = vy_prev*dt + (1/2)*g*(dt)**2
         y_now = y_prev + ds
+        vy_now = vy_prev + g*dt
+        balls[id]['vy'].append(vy_now)
         balls[id]['y'].append(y_now)
 
         
         x_prev = balls[id]['x'][-1]
         vx_prev = balls[id]['vx'][-1]
 
+        x_now = x_prev + vx_prev*dt
+
         vx_now = vx_prev
+
+        balls[id]['x'].append(x_now)
+        balls[id]['vx'].append(vx_now)
 
 
         """        
@@ -140,22 +148,25 @@ for i in range(N):
         """
 
         radius = balls[id]['radius']
-        r = balls[id]['r']
+        rcoef = balls[id]['r']
 
         """
         if (A_y0-A_radius) <= wall_below:
             A_vy0,A_y0 = collision(A_y0,A_vy0,A_r,A_radius,wall=wall_below)
         """
-
+        wall_above = 30
         if (y_prev-radius) <= wall_below:
-            vy_prev,y_prev = collision(y_prev,vy_prev,r,radius,wall=wall_below)
+            vy_now,y_now = collision(y_prev,vy_prev,rcoef,radius,wall=wall_below)
+
+        if (y_prev+radius) >= wall_above:
+            vy_now,y_now = collision2(y_prev,vy_prev,rcoef,radius,wall=wall_below)
         '''
         if (A_x0 - A_radius) <= wall_left:
             A_vx0,A_x0 = collision(A_x0,A_vx0,A_r,A_radius,wall=wall_left)
         '''
 
         if (x_prev - radius) <= wall_left:
-            vx_prev, x_prev = collision(x_prev,vx_prev,r,radius,wall=wall_left)
+            vx_now, x_now = collision(x_prev,vx_prev,rcoef,radius,wall=wall_left)
 
         '''
         if (A_x0 + A_radius) >= wall_right:
@@ -163,9 +174,13 @@ for i in range(N):
         '''
 
         if (x_prev + radius) >= wall_right:
-            vx_prev, x_prev = collision2(x_prev,B_vx0,B_r,B_radius,wall=wall_right)
+            vx_now, x_now = collision2(x_prev,vx_prev,rcoef,radius,wall=wall_right)
 
         
+        balls[id]['y'][-1]  = y_now
+        balls[id]['vy'][-1] = vy_now
+        balls[id]['x'][-1]  = x_now
+        balls[id]['vx'][-1] = vx_now
 
 # ---------------- Figure: draw a real ball ----------------
 fig, ax = plt.subplots(figsize=(8, 7))
@@ -182,6 +197,8 @@ ax.axvline(x=wall_right,color="Black",lw=3)
 
 # Labels 
 ax.set_xlabel("x (m)")
+ax.set_ylabel("y (m)")
+
 ax.set_yticks([])
 ax.set_title(f"{nos} Balls bouncing Under Gravity")
 
@@ -203,16 +220,16 @@ B_ball = Circle(xy=[B_pos[0][0],B_pos[0][1]],radius=B_radius,color="Black")
 
 
 def init():
-    for id in patches:
-        id.center = (balls[id]['x'][0],balls[id]['y'][0])
-        return (id.center)
+    for id,patch in enumerate(patches):
+        patch.center = (balls[id]['x'][0],balls[id]['y'][0])
+        return tuple(patches) # Must be Iterable with Artists
 #Your animation callbacks must return an 
 # iterable of artists when blit=True. So not (ball,), not ball
 
 def update(i):
-    for id in drawing_objects:
-        id.center = (balls[id]['x'][i],balls[id]['y'][i])
-    return (id.center)
+    for id,patch in enumerate(patches):
+        patch.center = (balls[id]['x'][i],balls[id]['y'][i])
+    return tuple(patches) # Must be Iterable with Artists
 
 ani = FuncAnimation(fig, update, init_func=init, frames=N, interval=1000*dt, blit=True)
 

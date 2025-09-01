@@ -22,7 +22,7 @@ N = int(T/dt) # How many times the Function should run
 # Lets start with 1D Collison in y
 
 # Lets Add Horizontal Velocty and Make this Guys 2D and add walls on side
-nos = 2 # what if i only give it 1?
+nos = 4 # what if i only give it 1?
 g = -9.81
 
 balls = []
@@ -32,7 +32,7 @@ for i in range(nos):
         'y': [random.randint(wall_below,30)],
         'vx': [random.randint(-20,20)], 
         'vy': [random.randint(-20,20)],
-        'radius': random.uniform(0.5,2),           # radius
+        'radius': random.uniform(0.5,0.5),           # radius
         'r': 0.9,            # coefficient of restitution
         # r=1: perfectly elastic → no energy loss → bounces forever.
         # r<1: inelastic → each bounce smaller.
@@ -61,7 +61,7 @@ def collision2(x0,v0,r,radius,wall):
     return v0, x0
 
 
-for i in range(N):
+for i in range(N): # Each Frame
     for id in range(nos):
         # Ball A
         y_prev = balls[id]['y'][-1]
@@ -93,61 +93,13 @@ for i in range(N):
     # Lets Shorted this logic using net distance < Combined Radius
     # Then Lets Make this a 2D collision
 
+        
+
 
         radius = balls[id]['radius']
         rcoef = balls[id]['r']
 
-
-        # Add Ball to ball Collisions:
-        # Using Simple i-j collsion check, inspired by lukepolson
-
-        ids = np.arange(0,len(balls),1)
-
-        ids_pairs = np.asarray(list(combinations(ids,2)))
-
-        # [[0, 1],[0, 2],...]
-
-        for pair in ids_pairs:
-            id_1 = pair[0]
-            id_2 = pair[1]
-
-            id_1y = balls[id_1]['y'][-1]
-            id_2y = balls[id_2]['y'][-1]
-
-            
-            id_1x = balls[id_1]['x'][-1]
-            id_2x = balls[id_2]['x'][-1]
-            
-            net_distance = np.sqrt((id_1y - id_2y)**2 + (id_1x - id_2x)**2)
-
-            id_1_radius = balls[id_1]['radius']
-            id_2_radius = balls[id_2]['radius']
-
-            id_1_vy = balls[id_1]['vy'][-1]
-            id_2_vy = balls[id_2]['vy'][-1]
-
-            id_1_rcoef = balls[id_1]['r']
-            id_2_rcoef = balls[id_2]['r']
-
-            '''
-            id_1_vx = balls[id_1]['vx'][-1]
-            id_2_vx = balls[id_2]['vx'][-1]
-            '''
-
-            if net_distance <= id_1_radius+id_2_radius:
-                id_1_vy = -id_1_rcoef*id_1_vy
-                id_2_vy = -id_2_rcoef*id_2_vy
-
-                # Append
-                balls[id_1]['vy'][-1] = id_1_vy 
-                balls[id_2]['vy'][-1] = id_2_vy
-
-
-
-                '''
-                x coef
-                '''
-
+        
 
             
 
@@ -189,6 +141,69 @@ for i in range(N):
         balls[id]['vy'][-1] = vy_now
         balls[id]['x'][-1]  = x_now
         balls[id]['vx'][-1] = vx_now
+
+
+
+        # Add Ball to ball Collisions:
+        # Using Simple i-j collsion check, inspired by lukepolson
+
+    ids = np.arange(0,len(balls),1)
+
+    ids_pairs = np.asarray(list(combinations(ids,2)))
+
+        # [[0, 1],[0, 2],...]
+
+    # Must Move pair-pair Collison detection 
+    # outside of Each frame Collision detation 
+    
+    # Logic is, For each Frame: 1) Check if balls collide with Walls
+    # 2) Each Pair Collsions. 
+    # Not Check if each Ball collides with wall AND check when we see one ball
+    # if each pair Colldies. This is extra. 
+    
+    for pair in ids_pairs:
+        id_1 = pair[0]
+        id_2 = pair[1]
+
+        id_1y = balls[id_1]['y'][-1]
+        id_2y = balls[id_2]['y'][-1]
+
+        
+        id_1x = balls[id_1]['x'][-1]
+        id_2x = balls[id_2]['x'][-1]
+        
+        net_distance = np.sqrt((id_1y - id_2y)**2 + (id_1x - id_2x)**2)
+
+        id_1_radius = balls[id_1]['radius']
+        id_2_radius = balls[id_2]['radius']
+
+        id_1_vy = balls[id_1]['vy'][-1]
+        id_2_vy = balls[id_2]['vy'][-1]
+
+        id_1_rcoef = balls[id_1]['r']
+        id_2_rcoef = balls[id_2]['r']
+
+        
+        id_1_vx = balls[id_1]['vx'][-1]
+        id_2_vx = balls[id_2]['vx'][-1]
+        
+
+        if net_distance <= id_1_radius+id_2_radius:
+            id_1_vy = -id_1_rcoef*id_1_vy
+            id_2_vy = -id_2_rcoef*id_2_vy
+
+            # Append
+            balls[id_1]['vy'][-1] = id_1_vy 
+            balls[id_2]['vy'][-1] = id_2_vy
+
+
+            # x
+            id_1_vx = -id_1_rcoef*id_1_vx
+            id_2_vx = -id_2_rcoef*id_2_vx
+
+            # Append
+            balls[id_1]['vx'][-1] = id_1_vx 
+            balls[id_2]['vx'][-1] = id_2_vx
 
 # ---------------- Figure: draw a real ball ----------------
 fig, ax = plt.subplots(figsize=(11, 8))

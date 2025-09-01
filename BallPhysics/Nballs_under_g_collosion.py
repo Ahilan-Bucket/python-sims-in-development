@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation, HTMLWriter
 from matplotlib.patches import Circle
 import webbrowser, os
 import random
+from itertools import combinations
 
 
 wall_below = 0 #m 
@@ -21,7 +22,7 @@ N = int(T/dt) # How many times the Function should run
 # Lets start with 1D Collison in y
 
 # Lets Add Horizontal Velocty and Make this Guys 2D and add walls on side
-nos = 10
+nos = 2 # what if i only give it 1?
 g = -9.81
 
 balls = []
@@ -96,6 +97,71 @@ for i in range(N):
         radius = balls[id]['radius']
         rcoef = balls[id]['r']
 
+
+        # Add Ball to ball Collisions:
+        # Using Simple i-j collsion check, inspired by lukepolson
+
+        ids = np.arange(0,len(balls),1)
+
+        ids_pairs = np.asarray(list(combinations(ids,2)))
+
+        # [[0, 1],[0, 2],...]
+
+        for pair in ids_pairs:
+            id_1 = pair[0]
+            id_2 = pair[1]
+
+            id_1y = balls[id_1]['y'][-1]
+            id_2y = balls[id_2]['y'][-1]
+
+            
+            id_1x = balls[id_1]['x'][-1]
+            id_2x = balls[id_2]['x'][-1]
+            
+            net_distance = np.sqrt((id_1y - id_2y)**2 + (id_1x - id_2x)**2)
+
+            id_1_radius = balls[id_1]['radius']
+            id_2_radius = balls[id_2]['radius']
+
+            id_1_vy = balls[id_1]['vy'][-1]
+            id_2_vy = balls[id_2]['vy'][-1]
+
+            id_1_rcoef = balls[id_1]['r']
+            id_2_rcoef = balls[id_2]['r']
+
+            '''
+            id_1_vx = balls[id_1]['vx'][-1]
+            id_2_vx = balls[id_2]['vx'][-1]
+            '''
+
+            if net_distance <= id_1_radius+id_2_radius:
+                id_1_vy = -id_1_rcoef*id_1_vy
+                id_2_vy = -id_2_rcoef*id_2_vy
+
+                # Append
+                balls[id_1]['vy'][-1] = id_1_vy 
+                balls[id_2]['vy'][-1] = id_2_vy
+
+
+
+                '''
+                x coef
+                '''
+
+
+            
+
+        """    
+        net_distance = np.sqrt((A_y0 - B_y0)**2 + (A_x0 - B_x0)**2)
+        if net_distance < A_radius+B_radius:
+            A_vy0 = -A_r * A_vy0
+            B_vy0 = -B_r * B_vy0
+
+            A_vx0 = -A_r * A_vx0
+            B_vx0 = -B_r * B_vx0
+        """
+
+
         # Alter the Current 'now' states if there is a collision
 
         '''
@@ -125,7 +191,7 @@ for i in range(N):
         balls[id]['vx'][-1] = vx_now
 
 # ---------------- Figure: draw a real ball ----------------
-fig, ax = plt.subplots(figsize=(8, 7))
+fig, ax = plt.subplots(figsize=(11, 8))
 ax.set_xlim(wall_left-5 ,wall_right+5)
 #ax.set_xlim(-10 ,30)
 

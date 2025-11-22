@@ -32,3 +32,20 @@ def normalize(psi):
         # 2. Divide the vector by the square root of that integral
         psi[:, i] = psi[:, i] / np.sqrt(norm_factor)
 
+
+def solve_cat(V_full):
+    """Solve the Eigen Value Equation"""
+
+    V = V_full[1:-1]
+
+    H = Hamiltonian(V)
+
+    E, psi = np.linalg.eigh(H)  # E is Eigen Value and Psi is Eigen Vector
+
+    psi = normalize(psi)
+
+    return E, psi
+
+
+
+

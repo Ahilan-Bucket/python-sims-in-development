@@ -1,10 +1,9 @@
 import numpy as np
-from .constants import hbar, m, dx, N
+from .config import hbar, m
 
 
-def Hamiltonian(V):
+def Hamiltonian(V, N, dx):
 
-    N
     # The Differntial operator
     main_diagonal = (1/dx**2)*np.diag(-2*np.ones(N))
     off_diagonal1 = (1/dx**2)*np.diag(np.ones(N-1),-1)
@@ -17,12 +16,12 @@ def Hamiltonian(V):
     # Correcting for Python Left to Right Product order
     T = (-(hbar**2/(2*m) ) * D2 ) # Recall D is the Differntial Operator 
 
-    H = T + np.diag(V[1:-1])
+    H = T + np.diag(V)
 
     return H
 
 
-def normalize(psi):
+def normalize(psi, dx):
     """Normalizes the eigenstates using the Riemann sum approximation."""
     for i in range(psi.shape[1]):
         # 1. Find the integral of probability density
@@ -32,17 +31,19 @@ def normalize(psi):
         # 2. Divide the vector by the square root of that integral
         psi[:, i] = psi[:, i] / np.sqrt(norm_factor)
 
+        return psi
 
-def solve_cat(V_full):
+
+def solve_cat(V_full, N, dx):
     """Solve the Eigen Value Equation"""
 
     V = V_full[1:-1]
 
-    H = Hamiltonian(V)
+    H = Hamiltonian(V, N, dx)
 
     E, psi = np.linalg.eigh(H)  # E is Eigen Value and Psi is Eigen Vector
 
-    psi = normalize(psi)
+    psi = normalize(psi,dx)
 
     return E, psi
 

@@ -87,6 +87,21 @@ def custom2(value,x):
     """Helper function from the notebook."""
     return value * np.ones_like(x)
 
+# In psi_solve2/functions.py
+
+def finite_square_well(x, lower_bound, upper_bound, depth_V):
+    """A finite square well of a specific depth_V (height of the walls)."""
+    
+    # Start with a baseline of zero potential
+    V = np.zeros_like(x) 
+    
+    # The walls outside the well are set to the height/depth V_0
+    V[x < lower_bound] = depth_V
+    V[x > upper_bound] = depth_V
+    
+    # The potential *inside* the well remains V=0 (or whatever you set the baseline to)
+    return V
+
 # ==========================================
 # 4. SCHRÖDINGER EQUATION SOLVER
 # ==========================================
@@ -134,44 +149,79 @@ def plot_V(V_raw_input):
     return fig
 
 
-def plot_alive(E, psi, V, x, nos=5):
-    """Probability density (psi^2) stacked."""
+def plot_alive(E, psi, V, x, no = 1,nos=5,mode=''):
+    """
+    Physically accurate plot:
+    - |psi|^2 has its own scale on right y-axis
+    - Potential & energy use left y-axis
+    
+    UPDATED: Colors synchronized between probability density and energy line.
+    """
+    import matplotlib.pyplot as plt
+    
     plt.style.use("dark_background")
-    fig, (ax_main, ax_bar) = plt.subplots(
-        1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [5, 1]}
-    )
-    fig.subplots_adjust(bottom=0.2, wspace=0.4)
-
-    N = psi.shape[0]
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+    
+    ax2 = ax1.twinx()  # Right axis for probability
+    
     states = min(nos, len(E))
     x_solver = x[1:-1]
     V_internal = V[1:-1]
 
-    for n in range(states):
+    # --- Plot Potential ---
+    ax1.plot(x, V, color="white", lw=2, label="V(x)", alpha=0.7)
+
+    # --- Plot wavefunctions ---
+    if mode == 'all':
+        for n in range(states):
+            # 1. Get the synchronized color for this state
+            color = plt.colormaps["tab20"].colors[n % 20]
+            
+            psi_n_sq = psi[:, n]**2
+            
+            # 2. Plot probability density on ax2 with the chosen color
+            ax2.plot(
+                x_solver, psi_n_sq,
+                label=rf"$|\psi_{n}|^2$ (E={E[n]:.2f})",
+                lw=1.2,
+                color=color # <-- EXPLICIT COLOR SET
+            )
+            
+            # 3. Plot energy line on ax1 with the same color
+            ax1.axhline(E[n], linestyle="--", lw=0.8, alpha=0.5, color=color) # <-- EXPLICIT COLOR SET
+    else:
+        # For single state mode, we still need a color. Use 'no' as the index.
+        n = no
         color = plt.colormaps["tab20"].colors[n % 20]
-        ax_main.plot(
-            x_solver,
-            psi[:, n] ** 2,
-            label=f"n={n+1}, E={E[n]:.2f}",
-            lw=1.3,
-            color=color,
+
+        psi_n_sq = psi[:, n]**2
+        
+        # Plot probability density on ax2 with the chosen color
+        ax2.plot(
+            x_solver, psi_n_sq,
+            label=rf"$|\psi_{no}|^2$ (E={E[no]:.2f})",
+            lw=1.2,
+            color=color # <-- EXPLICIT COLOR SET
         )
+        
+        # Plot energy line on ax1 with the same color
+        ax1.axhline(E[no], linestyle="--", lw=0.8, alpha=0.5, color=color) # <-- EXPLICIT COLOR SET
+        
+    # Formatting
+    ax1.set_xlabel("x [a.u.]")
+    ax1.set_ylabel("Energy / V(x)")
+    ax2.set_ylabel(r"Probability Density $|\psi|^2$")
 
-    ax_main.plot(x, np.clip(V, 0, np.max(E)*1.2), color='white', lw=2, alpha=0.6, label="V(x)")
-    ax_main.set_title("Probability Density & Potential")
-    ax_main.set_xlabel("x [a.u.]")
-    ax_main.set_ylabel(r"$|\psi|^2$")
-    ax_main.legend(fontsize=8)
+    ax1.set_title("Physically Accurate Eigenstates and Potential")
 
-    ax_bar.set_title("Energies")
-    ax_bar.set_xticks([])
-    ax_bar.set_ylim(0, np.max(E[:states]) * 1.1)
-    ax_bar.set_ylabel("Energy")
-    for n in range(states):
-        ax_bar.axhline(E[n], color=plt.colormaps["tab20"].colors[n % 20], lw=1)
-
+    # The fig.legend() might show the color/style of the *last* plot line. 
+    # For robust legend handling with twinx, you often need to combine the handles.
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax1.legend(h1+h2, l1+l2, loc="upper right", fontsize=8) # <-- Improved Legend
+    
+    plt.tight_layout()
     return fig
-
 
 def plot_dead(E, psi, V, x, nos=5):
     """Textbook: wavefunctions vertically shifted by energy."""
